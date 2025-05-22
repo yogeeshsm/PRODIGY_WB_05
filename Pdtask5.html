@@ -1,29 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Weather App</title>
-  <link rel="stylesheet" href="main.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to top, #2c3e50, #3498db);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-wrap {
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 2rem;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .location {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .city {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .date {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+    .current {
+      text-align: center;
+    }
+
+    .temp {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .weather {
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .hi-low {
+      font-size: 1rem;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 500px) {
+      .app-wrap {
+        padding: 1rem;
+      }
+
+      .temp {
+        font-size: 2.5rem;
+      }
+
+      .city {
+        font-size: 1.2rem;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="app-wrap">
     <header>
-      <input type="text" autocomplete="off" class="search-box" placeholder="Search for a city..." />
+      <input
+        type="text"
+        autocomplete="off"
+        class="search-box"
+        placeholder="Search for a city..."
+      />
     </header>
     <main>
       <section class="location">
-        <div class="city">Banglore, INDIA</div>
-        <div class="date">Monday 23 Jan  2024</div>
+        <div class="city">City, Country</div>
+        <div class="date">Day Date Month Year</div>
       </section>
       <div class="current">
-        <div class="temp">15<span>°c</span></div>
-        <div class="weather">Sunny</div>
-        <div class="hi-low">13°c / 16°c</div>
-  
+        <div class="temp"><span>--</span>°C</div>
+        <div class="weather">Loading...</div>
+        <div class="hi-low">--°C / --°C</div>
       </div>
     </main>
   </div>
-  <script src="main.js"></script>
+
+  <script>
+    const api = {
+      key: "YOUR_OPENWEATHERMAP_API_KEY",
+      base: "https://api.openweathermap.org/data/2.5/",
+    };
+
+    const searchBox = document.querySelector(".search-box");
+    searchBox.addEventListener("keypress", function (evt) {
+      if (evt.key === "Enter") {
+        getResults(searchBox.value);
+      }
+    });
+
+    function getResults(query) {
+      fetch(`${api.base}weather?q=${query}&units=metric&appid=${api.key}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("City not found");
+          return response.json();
+        })
+        .then(displayResults)
+        .catch(() => {
+          alert("City not found!");
+          document.querySelector(".city").textContent = "City not found";
+          document.querySelector(".temp span").textContent = "--";
+          document.querySelector(".weather").textContent = "N/A";
+          document.querySelector(".hi-low").textContent = "--°C / --°C";
+        });
+    }
+
+    function displayResults(weather) {
+      document.querySelector(".city").textContent = `${weather.name}, ${weather.sys.country}`;
+      document.querySelector(".date").textContent = buildDate(new Date());
+      document.querySelector(".temp span").textContent = Math.round(weather.main.temp);
+      document.querySelector(".weather").textContent = weather.weather[0].main;
+      document.querySelector(".hi-low").textContent = `${Math.round(weather.main.temp_min)}°C / ${Math.round(weather.main.temp_max)}°C`;
+    }
+
+    function buildDate(d) {
+      const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+  </script>
 </body>
 </html>
